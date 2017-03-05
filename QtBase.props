@@ -1,0 +1,108 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets" />
+  <PropertyGroup Label="UserMacros">
+    <!-- internal values -->
+    <!-- QTDIR parse (e.g. C:\Qt\5.2.1) -->
+    <_QtDirMajVerIdx>$([MSBuild]::Add($([System.Convert]::ToInt32($(QTDIR.LastIndexOfAny('\//')))), 1))</_QtDirMajVerIdx>
+    <_QtDirMinVerIdx>$([MSBuild]::Add($([System.Convert]::ToInt32($(QTDIR.IndexOfAny('.')))), 1))</_QtDirMinVerIdx>
+    <_QtDirBuildVerIdx>$([MSBuild]::Add($([System.Convert]::ToInt32($(QTDIR.IndexOf('.', $(_QtDirMinVerIdx))))), 1))</_QtDirBuildVerIdx>
+    <_QtDirLength>$([MSBuild]::Add($([System.Convert]::ToInt32($(QTDIR.Length))), 1))</_QtDirLength>
+	<_QtDirVerLen>$([MSBuild]::Subtract($([MSBuild]::Subtract($(_QtDirLength), $(_QtDirMajVerIdx))), 1))</_QtDirVerLen>
+    <_QtDirMajVerLen>$([MSBuild]::Subtract($([MSBuild]::Subtract($(_QtDirMinVerIdx), $(_QtDirMajVerIdx))), 1))</_QtDirMajVerLen>
+    <_QtDirMinVerLen Condition="'$(_QtDirBuildVerIdx)'!='0'">$([MSBuild]::Subtract($([MSBuild]::Subtract($(_QtDirBuildVerIdx), $(_QtDirMinVerIdx))), 1))</_QtDirMinVerLen>
+    <_QtDirMinVerLen Condition="'$(_QtDirBuildVerIdx)'=='0'">$([MSBuild]::Subtract($([MSBuild]::Subtract($(_QtDirLength), $(_QtDirMinVerIdx))), 1))</_QtDirMinVerLen>
+    <_QtDirBuildVerLen Condition="'$(_QtDirBuildVerIdx)'!='0'">$([MSBuild]::Subtract($([MSBuild]::Subtract($(_QtDirLength), $(_QtDirBuildVerIdx))), 1))</_QtDirBuildVerLen>
+    <_QtDirBuildVerLen Condition="'$(_QtDirBuildVerIdx)'=='0'">0</_QtDirBuildVerLen>
+    <!-- Qt version -->
+	<QtVersion>$(QTDIR.Substring($(_QtDirMajVerIdx), $(_QtDirVerLen)))</QtVersion>
+    <QtMajorVersion>$(QTDIR.Substring($(_QtDirMajVerIdx), $(_QtDirMajVerLen)))</QtMajorVersion>
+    <QtMinorVersion>$(QTDIR.Substring($(_QtDirMinVerIdx), $(_QtDirMinVerLen)))</QtMinorVersion>
+    <QtBuildVersion Condition="'$(_QtDirBuildVerIdx)'!='0'">$(QTDIR.Substring($(_QtDirBuildVerIdx), $(_QtDirBuildVerLen)))</QtBuildVersion>
+    <QtBuildVersion Condition="'$(_QtDirBuildVerIdx)'=='0'">0</QtBuildVersion>
+    <!-- VisualStudio version -->
+    <QtVSVersion Condition="'$(PlatformToolset)'=='v100'">msvc2010</QtVSVersion>
+    <QtVSVersion Condition="'$(PlatformToolset)|$(Platform)'=='v110|Win32'">msvc2012</QtVSVersion>
+    <QtVSVersion Condition="'$(PlatformToolset)|$(Platform)'=='v110|x64'">msvc2012_64</QtVSVersion>
+    <QtVSVersion Condition="'$(PlatformToolset)|$(Platform)'=='v120|Win32'">msvc2013</QtVSVersion>
+    <QtVSVersion Condition="'$(PlatformToolset)|$(Platform)'=='v120|x64'">msvc2013_64</QtVSVersion>
+    <QtVSVersion Condition="'$(PlatformToolset)|$(Platform)'=='v140|Win32'">msvc2015</QtVSVersion>
+    <QtVSVersion Condition="'$(PlatformToolset)|$(Platform)'=='v140|x64'">msvc2015_64</QtVSVersion>
+    <QtVSVersion Condition="'$(PlatformToolset)|$(Platform)'=='v150|Win32'">msvc2017</QtVSVersion>
+    <QtVSVersion Condition="'$(PlatformToolset)|$(Platform)'=='v150|x64'">msvc2017_64</QtVSVersion>
+	<!-- override QTDIR -->
+	<QTDIR>$([System.String]::Concat($(QTDIR), '\', $(QtVSVersion)))</QTDIR>
+    <!-- Qt debug suffix -->
+    <QtDebugSuffix Condition="'$(Configuration)'=='Debug'">d</QtDebugSuffix>
+    <QtDebugSuffix Condition="'$(Configuration)'!='Debug'"></QtDebugSuffix>
+    <!-- Qt configuration folder -->
+    <QtConfiguration>$(Configuration.ToLower())</QtConfiguration>
+    <!-- Qt platform suffix -->
+    <QtPlatform Condition="'$(Platform)'=='Win32'">32bit</QtPlatform>
+    <QtPlatform Condition="'$(Platform)'=='x64'">64bit</QtPlatform>
+    <!-- Qt creator build/bin directory -->
+    <QtCreatorBinDir>build-$(ProjectName)-Desktop_Qt_$(QtMajorVersion)_$(QtMinorVersion)_$(QtBuildVersion)_$(QtVSVersion.ToUpper())_$(QtPlatform)-$(Configuration)</QtCreatorBinDir>
+    <QtCreatorBinDir>build-$(ProjectName)-Desktop_Qt_$(QtMajorVersion)_$(QtMinorVersion)_$(QtBuildVersion)_$(QtVSVersion.ToUpper())_$(QtPlatform)-$(Configuration)</QtCreatorBinDir>
+    <!-- default Qt ouput directory -->
+    <QtCreatorOutDir>$(MSBuildProjectDirectory)\..\$(QtCreatorBinDir)\$(QtConfiguration)\</QtCreatorOutDir>
+    <QtBuildDir>$(MSBuildProjectDirectory)\build\$(Configuration)_$(Platform)_$(QtVSVersion)</QtBuildDir>
+    <QtBinDir>$(MSBuildProjectDirectory)\bin\$(Configuration)_$(Platform)_$(QtVSVersion)</QtBinDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(QTDIR)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>$(QTDIR)\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+	  <AdditionalDependencies>Qt5Core.lib;%(AdditionalDependencies)</AdditionalDependencies>
+	  <SubSystem>Windows</SubSystem>
+      <EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
+    </Link>
+  </ItemDefinitionGroup>
+  <PropertyGroup>
+    <OutDir>$(QtBinDir)\</OutDir>
+    <IntDir>$(QtBuildDir)\</IntDir>
+    <TargetName>$(ProjectName)$(QtDebugSuffix)</TargetName>
+  </PropertyGroup>
+  <PropertyGroup>
+    <LocalDebuggerEnvironment>PATH=$(QTDIR)\bin;%PATH%;</LocalDebuggerEnvironment>
+  </PropertyGroup>
+  <ItemGroup>
+    <BuildMacro Include="QtMajorVersion">
+      <Value>$(QtMajorVersion)</Value>
+    </BuildMacro>
+    <BuildMacro Include="QtMinorVersion">
+      <Value>$(QtMinorVersion)</Value>
+    </BuildMacro>
+    <BuildMacro Include="QtBuildVersion">
+      <Value>$(QtBuildVersion)</Value>
+    </BuildMacro>
+    <BuildMacro Include="QtVSVersion">
+      <Value>$(QtVSVersion)</Value>
+    </BuildMacro>
+    <BuildMacro Include="QTDIR">
+      <Value>$(QTDIR)</Value>
+    </BuildMacro>
+    <BuildMacro Include="QtDebugSuffix">
+      <Value>$(QtDebugSuffix)</Value>
+    </BuildMacro>
+    <BuildMacro Include="QtConfiguration">
+      <Value>$(QtConfiguration)</Value>
+    </BuildMacro>
+    <BuildMacro Include="QtPlatform">
+      <Value>$(QtPlatform)</Value>
+    </BuildMacro>
+    <BuildMacro Include="QtCreatorBinDir">
+      <Value>$(QtCreatorBinDir)</Value>
+    </BuildMacro>
+    <BuildMacro Include="QtCreatorOutDir">
+      <Value>$(QtCreatorOutDir)</Value>
+    </BuildMacro>
+    <BuildMacro Include="QtBuildDir">
+      <Value>$(QtBuildDir)</Value>
+    </BuildMacro>
+    <BuildMacro Include="QtBinDir">
+      <Value>$(QtBinDir)</Value>
+    </BuildMacro>
+  </ItemGroup>
+</Project>

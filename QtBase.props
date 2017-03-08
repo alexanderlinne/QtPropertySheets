@@ -54,7 +54,7 @@
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(QTDIR)\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-	  <AdditionalDependencies>Qt5Core.lib;%(AdditionalDependencies)</AdditionalDependencies>
+	  <AdditionalDependencies>Qt$(QtMajorVersion)Core$(QtDebugSuffix).lib;%(AdditionalDependencies)</AdditionalDependencies>
 	  <SubSystem>Windows</SubSystem>
       <EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
     </Link>
